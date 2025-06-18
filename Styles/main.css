@@ -1,0 +1,310 @@
+* {
+    margin: 0px;
+    padding: 0px;
+}
+
+body {
+    overflow: hidden;
+}
+
+button,
+select,
+input {
+    background-color: #c2e4c5;
+    color: #606060;
+    border-style: groove;
+    border-color: #606060;
+    border-radius: 5px;
+}
+
+button:hover,
+input:hover {
+    background-color: #607261;
+    color: #000000;
+}
+
+input:focus {
+    background-color: #607261;
+    color: #000000;
+}
+
+button,
+select {
+    cursor: pointer;
+}
+
+input {
+    cursor: text;
+}
+
+#header {
+    padding-left: 1vw;
+    padding-right: 1vw;
+    width: 100vw;
+    height: 15vh;
+    background-color: #c2e4c5;
+    display: flex;
+    border-bottom: #606060 groove;
+}
+
+#logo-naslov {
+    display: flex;
+    justify-content: space-between;
+    width: 60vw;
+}
+
+#logo {
+    width: 20%;
+}
+
+#naslov {
+    width: 75%;
+    font-size: xx-large;
+    font-weight: bold;
+    text-decoration-color: black;
+    margin-top: calc(7.5vh - 1vw);
+}
+
+#desni-text {
+    margin-left: 30%;
+    margin-right: 5%;
+    width: 40vw;
+    display: flex;
+    justify-content: space-around;
+
+}
+
+#desni-text h5 {
+    font-size: medium;
+    margin-top: calc(7.5vh - 1vw);
+}
+
+#desni-text h5:hover {
+    font-size: larger;
+}
+
+#desni-text select {
+    width: auto;
+    height: 5vh;
+    margin-top: calc(7.5vh - 2.5vh);
+}
+
+#postavke,
+#logout {
+    cursor: pointer;
+}
+
+#wrapper {
+    min-height: 80vh;
+    padding-top: 2vh;
+    padding-left: 1.8vw;
+    padding-right: 1vw;
+    background-color: #c2e4c5;
+}
+
+h2 {
+    font-family: monospace;
+    color: #606060;
+}
+
+h5 {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: #606060;
+}
+
+#ime-uredjaja {
+    font-size: xx-large;
+    font-weight: bold;
+    text-decoration-color: black;
+}
+
+#kontrola {
+    padding: 1vw;
+    display: flex;
+}
+
+
+#aktivacija-div h5,
+#aktivacija-div input {
+    display: inline;
+    font-size: medium;
+    padding: 1vw;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+#aktivacija-div input {
+    width: 20%;
+    height: 30px;
+}
+
+.aktivacija {
+    padding-top: 3vh;
+    width: 100%;
+}
+
+#spremi {
+    width: 25%;
+    height: 30px;
+
+    margin-top: 2%;
+    margin-left: 30%;
+}
+
+#aktivacija-div {
+    width: 60%;
+}
+
+#ostalo-div {
+    width: 40%;
+}
+
+#ostalo-div h5 {
+    font-size: medium;
+}
+
+#posljednji-update-div {
+    margin: 0 0 5vh 0;
+}
+
+.historija-dinamicni {
+    display: inline;
+}
+
+.historija-staticni {
+    padding-top: 1%;
+}
+
+#ime-uredjaja-kontrola {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+#ime-uredjaja-kontrola button {
+    width: 25vw;
+    height: 25px;
+    justify-self: center;
+}
+
+#stanje-div {
+    margin-top: 0;
+}
+
+.stanje-dinamicni {
+    display: inline;
+}
+
+.stanje-staticni {
+    margin-top: 2vh;
+}
+
+#nahrani {
+    margin-top: 5vh;
+}
+
+#nahrani h5 {
+    display: inline;
+}
+
+#dodaj-vodu {
+    display: block;
+}
+
+#nahrani button {
+    width: 30%;
+}
+
+#nahrani button,
+#nahrani input {
+    margin-right: 5%;
+    margin-bottom: 3%;
+    height: 30px;
+}
+
+#nahrani h5 {
+    margin-right: 1%;
+}
+
+#footer {
+    border-top: #606060 groove;
+    height: fit-content;
+    background-color: #c2e4c5;
+    text-align: center;
+    width: 100vw;
+}
+
+#upali-ugasi,
+#upali-ugasi-senzor {
+    font-weight: bold;
+    text-decoration-color: black;
+    font-size: large;
+}
+
+#spremanje-aktivacije {
+
+    display: flex;
+    justify-content: center;
+}
+
+@media screen and (max-width: 800px) {
+
+    body {
+        overflow-y: scroll;
+        overflow-x: hidden;
+    }
+
+    #header {
+        height: 30vh;
+        display: block;
+    }
+
+    #logo-naslov {
+        height: 15vh;
+        justify-content: center;
+    }
+
+    #desni-text {
+        width: 95vw;
+        height: 10vh;
+        margin: 0px;
+    }
+
+    #ostalo-div {
+        width: 100%;
+        display: block;
+        height: fit-content;
+    }
+
+    #aktivacija-div {
+        width: 100%;
+        display: block;
+        padding-top: 5vh;
+        margin-top: 5vh;
+    }
+
+    #kontrola {
+        margin-top: 5%;
+        margin-left: 10%;
+        margin-right: 5%;
+        flex-direction: column-reverse;
+    }
+
+    #wrapper,
+    #footer {
+        width: 100vw;
+        padding: 5px;
+    }
+
+    #footer {
+        margin: 0px;
+
+    }
+
+    #spremi {
+        margin-top: 2%;
+    }
+
+
+}

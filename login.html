@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="bs">
+
+<head>
+    <link rel="stylesheet" type="text/css" href="Styles/login.css" />
+    <link rel="stylesheet" type="text/css" href="Styles/messagebox.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Feeder Login</title>
+</head>
+
+<body>
+    <div id="wrapper">
+        <div id="textSlika">
+            <img src="Images/PetFeederLogo.png" />
+            <h2>Dobrodošli<br>Ulogujte se</h2>
+        </div>
+
+        <div id="FormaDiv">
+            <div id="EmailDiv">
+                <h5>Email</h5>
+                <input id="EmailInput" type="email" />
+            </div>
+            <div id="LozinkaDiv">
+                <h5>Lozinka</h5>
+                <input id="LozinkaInput" type="password" />
+            </div>
+            <div id="KontroleDiv">
+                <a id="LozinkaLink" href="resetLozinke.html">Zaboravili ste lozinku?</a>
+                <a id="RegistracijaLink" href="registracija.html">Nemate račun?</a>
+                <button onclick="login()">Prijava</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<script src="Scripts/helper.js"></script>
+<script src="Scripts/login.js"></script>
+<script src="Scripts/messagebox.js"></script>
+<script src="Scripts/validator.js"></script>
+
+</html>

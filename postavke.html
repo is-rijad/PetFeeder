@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="bs">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Feeder Postavke</title>
+    <link rel="stylesheet" href="Styles/postavke.css">
+    <link rel="stylesheet" href="Styles/messagebox.css">
+</head>
+
+<body>
+    <div id="wrapper">
+        <div id="foreground">
+            <h2>Moji uredjaji</h2>
+            <div id="moji-uredjaji">
+            </div>
+            <div id="novi-uredjaj">
+                <input type="text" name="ime-uredjaja" id="ime-uredjaja" class="novi-uredjaj"
+                    placeholder="Ime uredjaja">
+                <input type="text" name="mac-uredjaja" id="mac-uredjaja" class="novi-uredjaj"
+                    placeholder="MAC uredjaja">
+                <button id="dodaj-uredjaj" class="novi-uredjaj">Dodaj uređaj</button>
+            </div>
+
+            <div id="zaboravi-wifi">
+                <h2>Zaboravi WiFi na uređaju</h2>
+                <h5>Morat ćete se ponovo povezati kako biste mogli koristiti uređaj.</h5>
+                <button id="button-zaboravi" class="novi-uredjaj">Zaboravi</button>
+            </div>
+
+            <div id="lozinka">
+                <h2>Promjena lozinke</h2>
+                <div class="lozinka-unos">
+                    <h5>Unesite staru lozinku:</h5>
+                    <input id="stara-lozinka" type="password">
+                </div>
+                <div class="lozinka-unos">
+                    <h5>Unesite novu lozinku:</h5>
+                    <input id="nova-lozinka1" type="password">
+                </div>
+                <div class="lozinka-unos">
+                    <h5>Potvrdite novu lozinku:</h5>
+                    <input id="nova-lozinka2" type="password">
+                </div>
+                <button id="promijeni-lozinku">Promijeni</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<script src="https://www.gstatic.com/firebasejs/8.6.1/firebase.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-analytics.js"></script>
+<script src="Scripts/helper.js"></script>
+<script src="Scripts/postavke.js"></script>
+<script src="Scripts/messagebox.js"></script>
+<script src="Scripts/validator.js"></script>
+
+</html>

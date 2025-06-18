@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+      SA_PASSWORD: "MyDatabasePassword!"
+    healthcheck:
+      test: [ "CMD", "bash", "-c", "</dev/tcp/localhost/1433" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "1434:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+    networks:
+      - petfeeder
+
+  db-init:
+    image: mcr.microsoft.com/mssql-tools
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    entrypoint: >
+      /bin/bash -c " sleep 10; /opt/mssql-tools/bin/sqlcmd -S sqlserver,1433 -U sa -P MyDatabasePassword! -d master -i /scripts/init.sql "
+    volumes:
+      - ./sql:/scripts
+    networks:
+      - petfeeder
+    restart: "no"
+  web:
+    build:
+      context: ./WebApi/PetFeederWebApi/PetFeederWebApi/.
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__PetFeederDB=Server=sqlserver,1433;Database=PetFeeder;User ID=sa;Password=MyDatabasePassword!;MultipleActiveResultSets=True;TrustServerCertificate=True;
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+    networks:
+      - petfeeder
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - web
+      - sqlserver
+      - db-init
+    networks:
+      - petfeeder
+volumes:
+  sql_data:
+networks:
+  petfeeder:

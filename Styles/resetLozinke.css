@@ -1,0 +1,109 @@
+* {
+    padding: 0px;
+    margin: 0px;
+}
+
+button,
+input {
+    background-color: #c2e4c5;
+    color: #606060;
+    border-style: groove;
+    border-color: #606060;
+    border-radius: 5px;
+    width: 30%;
+    height: 30px;
+}
+
+button,
+select {
+    cursor: pointer;
+}
+
+input {
+    cursor: text;
+}
+
+
+body {
+    background-image: url('../Images/Background.png');
+    background-size: cover;
+}
+
+#wrapper {
+    background-color: #c2e4c5;
+    width: 60vw;
+    margin-left: 20vw;
+    margin-right: 20vw;
+    height: 80vh;
+    padding-top: 20vh;
+}
+
+img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 20vw;
+    height: 20hv;
+}
+
+#textSlika {
+    text-align: center;
+    padding-bottom: 5vh;
+}
+
+h2 {
+    font-family: monospace;
+    color: #606060;
+}
+
+h5 {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: #606060;
+}
+
+#EmailDiv {
+    padding-bottom: 1vh;
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+input {
+    width: 99%
+}
+
+button {
+    margin-top: 1vh;
+    width: 30%;
+    margin-left: 70%;
+}
+
+button:hover,
+input:hover {
+    background-color: #607261;
+    color: #000000;
+}
+
+input:focus {
+    background-color: #607261;
+    color: #000000;
+}
+
+@media screen and (max-width: 800px) {
+    body {
+        overflow-y: hidden;
+    }
+
+    #wrapper {
+        width: 80vw;
+        height: 70vh;
+        padding-top: 30vh;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    button {
+        width: 80%;
+        margin-left: 20%;
+    }
+}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="bs">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="Styles/main.css" />
+    <link rel="stylesheet" type="text/css" href="Styles/messagebox.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Pet Feeder</title>
+</head>
+
+<body>
+
+    <div id="header">
+        <div id="logo-naslov">
+            <img id="logo" src="Images/PetFeederLogo.png" alt="">
+            <h2 id="naslov">Kontrolni panel hranilice</h2>
+        </div>
+
+        <div id="desni-text">
+            <h5 id="postavke" onclick="redirekcija('postavke.html')">Postavke</h5>
+            <select name="uredjaji" id="uredjaji">
+            </select>
+            <h5 id="logout" onclick="logout()">Logout</h5>
+        </div>
+    </div>
+
+    <div id="wrapper">
+        <div id="ime-uredjaja-kontrola">
+            <h2 id="ime-uredjaja"></h2>
+            <button id="upali-ugasi-senzor"></button>
+            <button id="upali-ugasi"></button>
+        </div>
+        <div id="kontrola">
+            <div id="aktivacija-div">
+                <h5>Aktivacija</h5>
+                <input id="dnevno-puta" type="number" min="0" max="8">
+                <h5>puta dnevno.</h5>
+
+                <div id="kontrola-aktivacije-div">
+                </div>
+                <div id="spremanje-aktivacija">
+                    <button id="spremi">Spremi</button>
+                </div>
+            </div>
+            <div id="ostalo-div">
+                <div id="historija-div">
+                    <div id="posljednji-update-div">
+                        <h5>Posljednji update podataka:</h5>
+                        <h5 id="posljednji-update-datum" class="historija-dinamicni"></h5>
+                        <h5 class="historija-dinamicni">u</h5>
+                        <h5 id="posljednji-update-vrijeme" class="historija-dinamicni"></h5>
+                        <h5 class="historija-dinamicni">sati.</h5>
+                    </div>
+                    <h5>Vaš ljubimac je posljednji put imao obrok:</h5>
+                    <h5 id="historija-datum" class="historija-dinamicni"></h5>
+                    <h5 class="historija-dinamicni">u</h5>
+                    <h5 id="historija-vrijeme" class="historija-dinamicni"></h5>
+                    <h5 class="historija-dinamicni">sati.</h5>
+                </div>
+                <div id="stanje-div">
+                    <h5 class="stanje-staticni">Trenutno stanje hrane je:</h5>
+                    <h5 id="stanje-hranilice" class="stanje-dinamicni"></h5>
+                    <h5 class="stanje-dinamicni"> izbacivanja.</h5>
+                </div>
+                <div id="nahrani">
+                    <button id="dodaj-hranu">Dodaj hranu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer">
+        <h5>Rijad Iširlija :: IoT :: Fakultet informacijskih tehlonogija Univerziteta Džemal Bijedić u Mostaru.
+            Akademska godina 2023/2024.</h5>
+    </div>
+
+</body>
+
+<script src="https://www.gstatic.com/firebasejs/8.6.1/firebase.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-analytics.js"></script>
+<script src="Scripts/helper.js"></script>
+<script src="Scripts/main.js"></script>
+<script src="Scripts/messagebox.js"></script>
+
+</html>
