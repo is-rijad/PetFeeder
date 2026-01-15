@@ -1,4 +1,4 @@
 {
-    "api_url": "",
-    "frontend_url": ""
+    "backendUrl":  "https://perinatal-eugenia-uniconoclastically.ngrok-free.dev/api/tunnels/backend/",
+    "frontendUrl":  "https://perinatal-eugenia-uniconoclastically.ngrok-free.dev/api/tunnels/frontend/"
 }
