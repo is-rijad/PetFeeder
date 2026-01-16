@@ -25,10 +25,8 @@ namespace PetFeederWebApi.Controllers
             }
 
             uredjaj.Izbacivanja = podaci.Izbacivanja;
-            uredjaj.ImaoObrokVrijeme = (podaci.ImaoObrokVrijeme is null)
-                ? uredjaj.ImaoObrokVrijeme
-                : podaci.ImaoObrokVrijeme.Value;
-            uredjaj.PosljednjiUpdateVrijeme = DateTime.Now;
+            uredjaj.ImaoObrokVrijeme = podaci.ImaoObrokVrijeme;
+            uredjaj.PosljednjiUpdateVrijeme = podaci.PosljednjiUpdateVrijeme;
             _context.SaveChanges();
             return Ok();
         }
@@ -36,7 +34,6 @@ namespace PetFeederWebApi.Controllers
         [HttpGet]
         public IActionResult GetPodatke([FromQuery] string mac)
         {
-            Console.WriteLine($"MAC : {mac}");
             var uredjaj = _context.Uredjaji.FirstOrDefault(u => u.Mac == mac);
             if (uredjaj == null)
             {

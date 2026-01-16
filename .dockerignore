@@ -1,5 +1,6 @@
-.WebApi
 .github
 .vs
-.Arduino
-.node_modules
+Arduino
+node_modules
+ngrok.ps1
+sql

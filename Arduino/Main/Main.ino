@@ -4,281 +4,261 @@
 #include <RTClib.h>
 #include <ArduinoJson.h>
 #include <WiFiManager.h>
+#include <Wire.h>
 
-// #include <HX711_ADC.h>
-// #include <EEPROM.h>
-// #include <Stepper.h>
-
-
-struct NextAktivacija {
- uint8_t tezina;
- uint8_t sat;
- uint8_t minuta;
- NextAktivacija() {
-   tezina = 0;
-   sat = 0;
-   minuta = 0;
- }
- void setAktivaciju(uint8_t _tezina, uint8_t _sat, uint8_t _minuta)  {
-   tezina = _tezina;
-   sat = _sat;
-   minuta = _minuta;
- }
+struct NextAktivacija
+{
+  uint8_t sat;
+  uint8_t minuta;
+  void setAktivaciju(uint8_t _sat, uint8_t _minuta)
+  {
+    sat = _sat;
+    minuta = _minuta;
+  }
+};
+struct PodaciUredjaj
+{
+  uint8_t izbacivanja = 0;
+  DateTime *imaoObrokVrijeme = nullptr;
+  DateTime *posljednjiUpdateVrijeme = nullptr;
+  void setPodatke(uint8_t _izbacivanja, DateTime *_imaoObrokVrijeme, DateTime *_posljednjiUpdateVrijeme)
+  {
+    izbacivanja = _izbacivanja;
+    if (_imaoObrokVrijeme != nullptr)
+    {
+      delete _imaoObrokVrijeme;
+      imaoObrokVrijeme = _imaoObrokVrijeme;
+    }
+    if (_posljednjiUpdateVrijeme != nullptr)
+    {
+      delete _posljednjiUpdateVrijeme;
+      posljednjiUpdateVrijeme = _posljednjiUpdateVrijeme;
+    }
+  }
 };
 
 void spajanjeNaInternet(bool = false);
-float usIzmjeriDuzinu();
-int getNivoVodePosuda();
-int getNivoVodeSpremnik();
-bool imaLiHraneSpremnik();
+String saveNewApiUrl();
+String getApiUrl();
 // void updateFirebase();
 void updatePodatke();
 void getNextAktivaciju();
-// void izvrsiAktivaciju(uint8_t);
-void izvrsiAktivaciju(uint8_t);
-void sipajVodu();
-// void postaviVagu();
-// float getTezinuPosuda();
+void izvrsiAktivaciju();
+void getBrojIzbacivanja();
+void onPir();
+void onTaster();
 // ----------------KONSTANTE----------------
+#define MOTOR_PIN 26
+#define PIR_PIN 32
+#define TASTER_PIN 33
+#define SDA_PIN 21
+#define SCL_PIN 22
+
 #define FIREBASE_URL "https://petfeeder-28ccf-default-rtdb.europe-west1.firebasedatabase.app/"
 
-#define VODA_POSUDA 35
-#define VODA_SPREMNIK 36
-#define POSUDA_MIN 320
-#define POSUDA_MAX 2400
-#define SPREMNIK_MIN 350
-#define SPREMNIK_MAX 480
-
-// #define MOTOR_IN1 19
-// #define MOTOR_IN2 18
-// #define MOTOR_IN3 5
-// #define MOTOR_IN4 17
-
-#define PUMPA_RELEJ 25
-#define MOTOR_RELEJ 17
-
-#define US_TRIG_PIN 14
-#define US_ECHO_PIN 12
-#define HX711_DOUT_PIN 16
-#define HX711_SCK_PIN 4
-
-// const int stepsPerRevolution = 200;
-// const int pomakniZa = 100;
-const String getNextUrl = "https://api.p2362.app.fit.ba/Aktivacija/GetNextAktivaciju?MacAdresa=";
-const String updatePodatakaUrl = "https://api.p2362.app.fit.ba/Uredjaj/UpdatePodataka";
-
-
-
+String backendUrl = "";
+const String getNextUrl = "/Aktivacija/GetNextAktivaciju?MacAdresa=";
+const String updatePodatakaUrl = "/Uredjaj/UpdatePodataka";
+const String getPodatkeZaUredjajUrl = "/Uredjaj/GetPodatke?mac=";
 
 // ----------------VARIJABLE----------------
 Firebase firebase(FIREBASE_URL);
-// Stepper stepperMotor(stepsPerRevolution, MOTOR_IN1, MOTOR_IN3, MOTOR_IN2, MOTOR_IN4);
-// HX711_ADC LoadCell(HX711_DOUT_PIN, HX711_SCK_PIN);
 RTC_DS3231 sat;
 
 String macAdresa;
-DateTime posljednjiUpdate = DateTime();
-DateTime posljednjeSipanjeVode = DateTime();
-NextAktivacija nextAktivacija = NextAktivacija();
+NextAktivacija *nextAktivacija = nullptr;
+PodaciUredjaj podaciUredjaj = PodaciUredjaj();
 //----------------INICIJALIZACIJA----------------
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
+
+  pinMode(MOTOR_PIN, OUTPUT);
+  pinMode(PIR_PIN, INPUT);
+  pinMode(TASTER_PIN, INPUT_PULLUP);
+  digitalWrite(MOTOR_PIN, HIGH);
+  attachInterrupt(digitalPinToInterrupt(PIR_PIN), onPir, RISING);
+  attachInterrupt(digitalPinToInterrupt(TASTER_PIN), onTaster, FALLING);
 
   spajanjeNaInternet();
 
-  // postaviVagu();
-
-  while (!sat.begin()) {
-   Serial.println("Sat nije pronadjen!");
-   delay(100);
+  Wire.begin(SDA_PIN, SCL_PIN);
+  while (!sat.begin())
+  {
+    Serial.println("Sat nije pronadjen!");
+    delay(100);
   }
-  pinMode(VODA_POSUDA, INPUT);
-  pinMode(VODA_SPREMNIK, INPUT);
-
-  pinMode(PUMPA_RELEJ, OUTPUT);
-  digitalWrite(PUMPA_RELEJ, HIGH);
-
-  pinMode(MOTOR_RELEJ, OUTPUT);
-  digitalWrite(MOTOR_RELEJ, HIGH);
-
-  pinMode(US_TRIG_PIN, OUTPUT);
-  pinMode(US_ECHO_PIN, INPUT);
-
-  // stepperMotor.setSpeed(30);
 
   macAdresa = WiFi.macAddress();
 
   getNextAktivaciju();
+  getPodatkeZaUredjaj();
 }
 
 //----------------MAIN----------------
-void loop() {
-  if(firebase.getInt(macAdresa + "/zaboraviWifi") == 1) {
-   firebase.setInt(macAdresa + "/zaboraviWifi", -1);
-   spajanjeNaInternet(true);
+void loop()
+{
+  if (firebase.getInt(macAdresa + "/zaboraviWifi") == 1)
+  {
+    firebase.setInt(macAdresa + "/zaboraviWifi", -1);
+    spajanjeNaInternet(true);
   }
-  if (firebase.getInt(macAdresa + "/uredjajAktivan") == 1) {
-   if (firebase.getInt(macAdresa + "/dodajHranu") == 1) {
-       izvrsiAktivaciju(firebase.getInt(macAdresa + "/dodajHraneDo"));
-       firebase.setInt(macAdresa + "/dodajHranu", -1);
-   }
-   if (firebase.getInt(macAdresa + "/dodajVodu") == 1) {
-       sipajVodu();
-       firebase.setInt(macAdresa + "/dodajVodu", -1);
-   }
-   if(firebase.getInt(macAdresa + "/aktivacijeIzmijenjene") == 1 || nextAktivacija.tezina <= 0) {
-     getNextAktivaciju();
-     firebase.setInt(macAdresa + "/aktivacijeIzmijenjene", -1);
-   }
-   if (sat.now().hour() == nextAktivacija.sat && sat.now().minute() == nextAktivacija.minuta) {
-     uint8_t brojPokusaja = 0;
-     while(nextAktivacija.tezina <= 0 && brojPokusaja < 5) {
-       getNextAktivaciju();
-       brojPokusaja++;
-     }
-     if (brojPokusaja < 5) {
-       izvrsiAktivaciju(nextAktivacija.tezina);
-       getNextAktivaciju();
-     }
-   }
-   if ((posljednjeSipanjeVode.hour() + 1 == sat.now().hour() && posljednjeSipanjeVode.minute() == sat.now().minute())
-       || posljednjeSipanjeVode.secondstime() == 0) {
-     sipajVodu();
-   }
-   if((posljednjiUpdate.minute() + 2 == sat.now().minute()) || posljednjiUpdate.secondstime() == 0) 
-     updatePodatke();
+  if (sat.now().hour() == 0 && podaciUredjaj.izbacivanja > 0 && (podaciUredjaj.imaoObrokVrijeme == nullptr || podaciUredjaj.imaoObrokVrijeme->hour() != 0))
+  {
+    podaciUredjaj.izbacivanja = 0;
+    updatePodatke();
+  }
+  if (firebase.getInt(macAdresa + "/uredjajAktivan") == 1)
+  {
+    if (firebase.getInt(macAdresa + "/dodajHranu") == 1)
+    {
+      izvrsiAktivaciju();
+      firebase.setInt(macAdresa + "/dodajHranu", -1);
+    }
+    if (firebase.getInt(macAdresa + "/aktivacijeIzmijenjene") == 1)
+    {
+      getNextAktivaciju();
+      firebase.setInt(macAdresa + "/aktivacijeIzmijenjene", -1);
+    }
+    if (nextAktivacija != nullptr && (sat.now().hour() == nextAktivacija->sat && sat.now().minute() == nextAktivacija->minuta))
+    {
+      izvrsiAktivaciju();
+      getNextAktivaciju();
+    }
+    if (podaciUredjaj.posljednjiUpdateVrijeme == nullptr || (podaciUredjaj.posljednjiUpdateVrijeme->minute() + 2 == sat.now().minute()))
+      updatePodatke();
   }
 }
-void spajanjeNaInternet(bool zaboraviWifi) {
- WiFiManager wm;
- if(zaboraviWifi)
-   wm.resetSettings();
- WiFi.mode(WIFI_STA);
- wm.setHostname("Pet Feeder WiFi");
- wm.setConfigPortalTimeout(60);
- wm.setHostname("pf.wifi.com");
- wm.setConfigPortalTimeoutCallback(wmConfigPortalTimeout);
- WiFiManagerParameter macAdresa("macAdresa", "MAC adresa<br>Sačuvajte je radi dodavanja uređaja", WiFi.macAddress().c_str(), 20, "<input type=\"text\" readonly=\"true\"");
- wm.addParameter(&macAdresa);
- wm.autoConnect("Pet Feeder");
-}
-float usIzmjeriDuzinu() {
- float trajanjePulsa;
+String saveNewApiUrl()
+{
+  HTTPClient http;
+  http.begin("https://raw.githubusercontent.com/is-rijad/PetFeeder/refs/heads/master/urls.json");
+  http.setTimeout(5000);
 
- digitalWrite(US_TRIG_PIN, HIGH);
- delayMicroseconds(50);
- digitalWrite(US_TRIG_PIN, LOW);
+  int code = http.GET();
+  if (code != 200)
+  {
+    http.end();
+    return "";
+  }
 
- trajanjePulsa = pulseIn(US_ECHO_PIN, HIGH);
+  JsonDocument doc;
+  deserializeJson(doc, http.getString());
 
- return (0.017 * trajanjePulsa);
+  url = doc["url"].as<String>();
+  http.end();
+  return url;
 }
-int getNivoVodePosuda() {
- int rezultat = map(analogRead(VODA_POSUDA), POSUDA_MIN, POSUDA_MAX, 0, 10);
- return (rezultat > 0) ? rezultat : 0;
+String getApiUrl()
+{
+  HTTPClient http;
+  http.begin(url + "status");
+  http.setTimeout(5000);
+  int code = http.GET();
+  if (code != 200)
+  {
+    url = saveNewApiUrl();
+  }
+  return url;
 }
-int getNivoVodeSpremnik() {
- int rezultat = map(analogRead(VODA_SPREMNIK), SPREMNIK_MIN, SPREMNIK_MAX, 0, 3);
- return (rezultat > 0) ? rezultat : 0;
+void spajanjeNaInternet(bool zaboraviWifi)
+{
+  WiFiManager wm;
+  if (zaboraviWifi)
+    wm.resetSettings();
+  WiFi.mode(WIFI_STA);
+  wm.setHostname("Pet Feeder WiFi");
+  wm.setConfigPortalTimeout(60);
+  wm.setHostname("pf.wifi.com");
+  wm.setConfigPortalTimeoutCallback(wmConfigPortalTimeout);
+  WiFiManagerParameter macAdresa("macAdresa", "MAC adresa<br>Sačuvajte je radi dodavanja uređaja", WiFi.macAddress().c_str(), 20, "<input type=\"text\" readonly=\"true\"");
+  wm.addParameter(&macAdresa);
+  wm.autoConnect("Pet Feeder");
 }
-
-bool imaLiHraneSpremnik() {
- float duzina = usIzmjeriDuzinu();
- return (duzina < 8.7 || duzina > 9.4) ? true : false;
-}
-// void updateFirebase() {
-//    firebase.setInt(macAdresa + "/hrana", 0); //IZMJENA
-//    firebase.setInt(macAdresa + "/voda", getNivoVodePosuda()); 
-//    firebase.setFloat(macAdresa + "/hranaSpremnik", imaLiHraneSpremnik()); 
-//    firebase.setInt(macAdresa + "/vodaSpremnik", getNivoVodeSpremnik()); 
-//    firebase.setString(macAdresa + "/imaoObrok", sat.now().timestamp()); //IZMJENA
-//    firebase.setFloat(macAdresa + "/imaoObrokPojeo", 0.0); //IZMJENA
-//    posljednjiUpdate = sat.now();
-//    firebase.setString(macAdresa + "/posljednjiUpdate", posljednjiUpdate.timestamp());
-// }
-void updatePodatke() {
+void updatePodatke()
+{
   HTTPClient http;
   JsonDocument doc;
   doc["mac"] = macAdresa;
-  doc["hranaPosuda"] = -1;
-  doc["hranaSpremnik"] = imaLiHraneSpremnik();
-  doc["vodaPosuda"] = getNivoVodePosuda();
-  doc["vodaSpremnik"] = getNivoVodeSpremnik();
-  doc["imaoObrokVrijeme"] = sat.now().timestamp();
-  doc["imaoObrokPojeo"] = 0;
+  doc["izbacivanja"] = podaciUredjaj.izbacivanja;
+  if (podaciUredjaj.imaoObrokVrijeme != nullptr)
+  {
+    doc["imaoObrokVrijeme"] = podaciUredjaj.imaoObrokVrijeme->timestamp();
+  }
   doc["posljednjiUpdateVrijeme"] = sat.now().timestamp();
   String object;
   serializeJson(doc, object);
+  String url = getApiUrl() + updatePodatakaUrl;
+  http.begin(url.c_str());
   http.POST(object);
   http.end();
 }
-void getNextAktivaciju() {
- HTTPClient http;
- String url = getNextUrl + macAdresa;
- http.begin(url.c_str());
- int httpResponseCode = http.GET();
+void getNextAktivaciju()
+{
+  HTTPClient http;
+  String url = getApiUrl() + getNextUrl + macAdresa;
+  http.begin(url.c_str());
+  int httpResponseCode = http.GET();
 
- if (httpResponseCode == 200) {
-   JsonDocument doc;
-   deserializeJson(doc, http.getString());
-   nextAktivacija.setAktivaciju(doc["tezina"], doc["sat"], doc["minuta"]);
- }
- http.end();
+  if (httpResponseCode == 200)
+  {
+    JsonDocument doc;
+    deserializeJson(doc, http.getString());
+    nextAktivacija->setAktivaciju(doc["sat"], doc["minuta"]);
+  }
+  else
+  {
+    delete nextAktivacija;
+    nextAktivacija = nullptr;
+  }
+  http.end();
 }
-void wmConfigPortalTimeout() {
- ESP.restart();
-}
-// void izvrsiAktivaciju(uint8_t ciljanaTezina) {
-//  if (usIzmjeriDuzinu() < ciljanaTezina - 10 && imaLiHraneSpremnik()) {
-//    stepperMotor.step(-pomakniZa);
-//    while(1) {
-//      if (usIzmjeriDuzinu() > ciljanaTezina - 5) {
-//        stepperMotor.step(pomakniZa);
-//        break;
-//      }
-//    }
-//  }
-// }
-void izvrsiAktivaciju(uint8_t sekundi = 10) {
-  digitalWrite(MOTOR_RELEJ, HIGH);
-  uint32_t vrijemePocetka = sat.now().secondstime();
-  uint32_t vrijemeKraja = vrijemePocetka + sekundi;
-  while(sat.now().secondstime() >= vrijemeKraja){}
-  digitalWrite(MOTOR_RELEJ, LOW);
-}
-void sipajVodu() {
- if (getNivoVodePosuda() < 9 && getNivoVodeSpremnik() >= 1) {
-   digitalWrite(PUMPA_RELEJ, LOW);
-   while(1) {
-     if (getNivoVodePosuda() >= 9 || getNivoVodeSpremnik() < 1) {
-       digitalWrite(PUMPA_RELEJ, HIGH);
-       posljednjeSipanjeVode = sat.now();
-       break;
-     }
-   }
- }
-}
-// void postaviVagu() {
-//   const int kalibracijaEEPROMAdresa = 0;
-//   LoadCell.begin();
-//   float kalibracijskiFaktor; 
-//   EEPROM.begin(512);
-//   EEPROM.get(kalibracijaEEPROMAdresa, kalibracijskiFaktor);
+void getPodatkeZaUredjaj()
+{
+  HTTPClient http;
+  String url = getApiUrl() + getPodatkeZaUredjajUrl + macAdresa;
+  http.begin(url.c_str());
+  int httpResponseCode = http.GET();
 
-//   unsigned long vrijemeStabilizacije = 2000;
-//   boolean tare = true;
-//   LoadCell.start(vrijemeStabilizacije, tare);
-//   while (LoadCell.getTareTimeoutFlag()) {
-//     Serial.println("Neuspjesno postavljanje! Provjeri HX711!");
-//   }
-//   LoadCell.setCalFactor(kalibracijskiFaktor);
-// }
-// float getTezinuPosuda() {
-//   if (LoadCell.update()) {
-//     return LoadCell.getData();
-//   }
-//   else {
-//     return -1;
-//   }
-// }
+  if (httpResponseCode == 200)
+  {
+    JsonDocument doc;
+    deserializeJson(doc, http.getString());
+    DateTime *_imaoObrokVrijeme = nullptr;
+    DateTime *_posljednjiUpdateVrijeme = nullptr;
+    if (!doc["imaoObrokVrijeme"].isNull())
+    {
+      _imaoObrokVrijeme = new DateTime(doc["imaoObrokVrijeme"].as<uint32_t>());
+    }
+    if (!doc["posljednjiUpdateVrijeme"].isNull())
+    {
+      _posljednjiUpdateVrijeme = new DateTime(doc["posljednjiUpdateVrijeme"].as<uint32_t>());
+    }
+    podaciUredjaj.setPodatke(doc["izbacivanja"], _imaoObrokVrijeme, _posljednjiUpdateVrijeme);
+  }
+  http.end();
+}
+void wmConfigPortalTimeout()
+{
+  ESP.restart();
+}
+void izvrsiAktivaciju()
+{
+  digitalWrite(MOTOR_PIN, HIGH);
+  digitalWrite(MOTOR_PIN, LOW);
+  podaciUredjaj.izbacivanja++;
+  *podaciUredjaj.imaoObrokVrijeme = sat.now();
+}
+void onPir()
+{
+  if (firebase.getInt(macAdresa + "/upaljenSenzor") == 1)
+  {
+    izvrsiAktivaciju();
+  }
+}
+void onTaster()
+{
+  podaciUredjaj.izbacivanja = 0;
+  updatePodatke();
+}

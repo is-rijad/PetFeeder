@@ -78,7 +78,6 @@ function dodajUredjajZaKorisnika() {
             if (snap.val() == null) {
                 uredjajdb.child(macUredjaja).set({
                     uredjajAktivan: -1,
-                    updatePodatakaPotreban: -1,
                     dodajHranu: -1,
                     aktivacijeIzmijenjene: -1,
                     zaboraviWifi: -1,

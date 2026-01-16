@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -20,18 +18,6 @@ services:
     networks:
       - petfeeder
 
-  db-init:
-    image: mcr.microsoft.com/mssql-tools
-    depends_on:
-      sqlserver:
-        condition: service_healthy
-    entrypoint: >
-      /bin/bash -c " sleep 10; /opt/mssql-tools/bin/sqlcmd -S sqlserver,1433 -U sa -P MyDatabasePassword! -d master -i /scripts/init.sql "
-    volumes:
-      - ./sql:/scripts
-    networks:
-      - petfeeder
-    restart: "no"
   web:
     build:
       context: ./WebApi/PetFeederWebApi/PetFeederWebApi/.
@@ -39,14 +25,12 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__PetFeederDB=Server=sqlserver,1433;Database=PetFeeder;User ID=sa;Password=MyDatabasePassword!;MultipleActiveResultSets=True;TrustServerCertificate=True;
     depends_on:
       sqlserver:
         condition: service_healthy
-      db-init:
-        condition: service_completed_successfully
     networks:
       - petfeeder
   frontend:
@@ -58,7 +42,6 @@ services:
     depends_on:
       - web
       - sqlserver
-      - db-init
     networks:
       - petfeeder
 volumes:

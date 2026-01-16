@@ -33,4 +33,4 @@ function encoder(plain) {
 
     return rezultat;
 }
-const urlAplikacije = `http://localhost:8080`;
+const urlAplikacije = `/api`;
