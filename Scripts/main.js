@@ -17,6 +17,11 @@ document.onload = provjeriIdentitet();
 let ucitaneAktivacije;
 let kontrolaAktivacijeDiv = document.getElementById("kontrola-aktivacije-div");
 
+function hasUredjajChanged() {
+    document.getElementById("wrapper-bez-uredjaja").classList.add("hidden");
+    document.getElementById("wrapper-sa-uredjajima").classList.remove("hidden");
+}
+
 function logout() {
     redirekcija("login.html");
     sessionStorage.removeItem(korisnikId);
@@ -83,6 +88,7 @@ function pripremiComboBox() {
             if (r.length == 0)
                 document.getElementById("uredjaji").innerHTML += `<option value="-1" selected="selected">Nemate uređaja</option>`;
             else {
+                hasUredjajChanged();
                 for (let i = 0; i < r.length; i++) {
                     if (i == 0)
                         document.getElementById("uredjaji").innerHTML += `<option selected value="${r[i].mac}">${r[i].ime}</option>`;

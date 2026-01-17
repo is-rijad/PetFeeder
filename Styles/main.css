@@ -94,7 +94,11 @@ input {
     cursor: pointer;
 }
 
-#wrapper {
+.hidden {
+    display: none;
+}
+
+.wrapper {
     min-height: 80vh;
     padding-top: 2vh;
     padding-left: 1.8vw;
