@@ -6,20 +6,25 @@
 #include <WiFiManager.h>
 #include <Wire.h>
 
-struct NextAktivacija {
+struct NextAktivacija
+{
   uint8_t sat;
   uint8_t minuta;
-  void setAktivaciju(uint8_t _sat, uint8_t _minuta) {
+  void setAktivaciju(uint8_t _sat, uint8_t _minuta)
+  {
     sat = _sat;
     minuta = _minuta;
   }
 };
-struct PodaciUredjaj {
+struct PodaciUredjaj
+{
   uint8_t izbacivanja = 0;
-  DateTime* imaoObrokVrijeme = nullptr;
-  void setPodatke(uint8_t _izbacivanja, DateTime* _imaoObrokVrijeme) {
+  DateTime *imaoObrokVrijeme = nullptr;
+  void setPodatke(uint8_t _izbacivanja, DateTime *_imaoObrokVrijeme)
+  {
     izbacivanja = _izbacivanja;
-    if (_imaoObrokVrijeme != nullptr) {
+    if (_imaoObrokVrijeme != nullptr)
+    {
       delete _imaoObrokVrijeme;
       imaoObrokVrijeme = _imaoObrokVrijeme;
     }
@@ -30,7 +35,7 @@ void spajanjeNaInternet(bool = false);
 String saveNewApiUrl();
 String getApiUrl();
 void updatePodatke();
-void getNextAktivaciju(int* izvrsenaHour, int* izvrsenaMinute);
+void getNextAktivaciju(int *izvrsenaHour, int *izvrsenaMinute);
 void izvrsiAktivaciju();
 // ----------------KONSTANTE----------------
 #define MOTOR_PIN 26
@@ -49,11 +54,12 @@ RTC_DS3231 sat;
 
 String macAdresa;
 String backendUrl = "";
-NextAktivacija* nextAktivacija = nullptr;
+NextAktivacija *nextAktivacija = nullptr;
 PodaciUredjaj podaciUredjaj = PodaciUredjaj();
 //----------------INICIJALIZACIJA----------------
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
 
   pinMode(MOTOR_PIN, OUTPUT);
@@ -63,7 +69,8 @@ void setup() {
   macAdresa = WiFi.macAddress();
 
   Wire.begin(SDA_PIN, SCL_PIN);
-  while (!sat.begin()) {
+  while (!sat.begin())
+  {
     Serial.println("Sat nije pronadjen!");
     delay(100);
   }
@@ -74,42 +81,52 @@ void setup() {
 }
 
 //----------------MAIN----------------
-void loop() {
-  if (firebase.getInt(macAdresa + "/zaboraviWifi") == 1) {
+void loop()
+{
+  if (firebase.getInt(macAdresa + "/zaboraviWifi") == 1)
+  {
     firebase.setInt(macAdresa + "/zaboraviWifi", -1);
     spajanjeNaInternet(true);
   }
-  if (firebase.getInt(macAdresa + "/uredjajAktivan") == 1) {
-    if (sat.now().hour() == 0 && sat.now().minute() == 0) {
+  if (firebase.getInt(macAdresa + "/uredjajAktivan") == 1)
+  {
+    if (sat.now().hour() == 0 && sat.now().minute() == 0)
+    {
       getNextAktivaciju(nullptr, nullptr);
     }
-    if (firebase.getInt(macAdresa + "/resetujIzbacivanja") == 1) {
+    if (firebase.getInt(macAdresa + "/resetujIzbacivanja") == 1)
+    {
       podaciUredjaj.izbacivanja = 0;
       firebase.setInt(macAdresa + "/resetujIzbacivanja", -1);
     }
-    if (firebase.getInt(macAdresa + "/dodajHranu") == 1) {
+    if (firebase.getInt(macAdresa + "/dodajHranu") == 1)
+    {
       izvrsiAktivaciju();
       updatePodatke();
       firebase.setInt(macAdresa + "/dodajHranu", -1);
     }
-    if (firebase.getInt(macAdresa + "/aktivacijeIzmijenjene") == 1) {
+    if (firebase.getInt(macAdresa + "/aktivacijeIzmijenjene") == 1)
+    {
       getNextAktivaciju(nullptr, nullptr);
       firebase.setInt(macAdresa + "/aktivacijeIzmijenjene", -1);
     }
-    if (nextAktivacija != nullptr && (sat.now().hour() == nextAktivacija->sat && sat.now().minute() == nextAktivacija->minuta)) {
+    if (nextAktivacija != nullptr && (sat.now().hour() == nextAktivacija->sat && sat.now().minute() == nextAktivacija->minuta))
+    {
       izvrsiAktivaciju();
       updatePodatke();
       getNextAktivaciju(new int(sat.now().hour()), new int(sat.now().minute()));
     }
   }
 }
-String saveNewApiUrl() {
+String saveNewApiUrl()
+{
   HTTPClient http;
   http.begin("https://raw.githubusercontent.com/is-rijad/PetFeeder/refs/heads/master/urls.json");
   http.setTimeout(5000);
 
   int code = http.GET();
-  if (code <= 0) {
+  if (code <= 0)
+  {
     http.end();
     backendUrl = "";
     return "";
@@ -122,17 +139,20 @@ String saveNewApiUrl() {
   http.end();
   return backendUrl;
 }
-String getApiUrl() {
+String getApiUrl()
+{
   HTTPClient http;
   http.begin(backendUrl + "/status");
   http.setTimeout(5000);
   int code = http.GET();
-  if (code <= 0) {
+  if (code <= 0)
+  {
     backendUrl = saveNewApiUrl();
   }
   return backendUrl;
 }
-void spajanjeNaInternet(bool zaboraviWifi) {
+void spajanjeNaInternet(bool zaboraviWifi)
+{
   WiFiManager wm;
   if (zaboraviWifi)
     wm.resetSettings();
@@ -145,17 +165,19 @@ void spajanjeNaInternet(bool zaboraviWifi) {
   wm.addParameter(&macAdresa);
   wm.autoConnect("Pet Feeder");
 }
-void updatePodatke() {
+void updatePodatke()
+{
   HTTPClient http;
   JsonDocument doc;
   doc["mac"] = macAdresa;
   doc["izbacivanja"] = podaciUredjaj.izbacivanja;
-  if (podaciUredjaj.imaoObrokVrijeme != nullptr) {
+  if (podaciUredjaj.imaoObrokVrijeme != nullptr)
+  {
     char buf[25];
     snprintf(buf, sizeof(buf),
-             "%04d-%02d-%02dT%02d:%02d:%02dZ",
+             "%04d-%02d-%02dT%02d:%02d:%02d",
              podaciUredjaj.imaoObrokVrijeme->year(),
-             podaciUredjaj.imaoObrokVrijeme->month() + 1,
+             podaciUredjaj.imaoObrokVrijeme->month(),
              podaciUredjaj.imaoObrokVrijeme->day(),
              podaciUredjaj.imaoObrokVrijeme->hour(),
              podaciUredjaj.imaoObrokVrijeme->minute(),
@@ -171,55 +193,67 @@ void updatePodatke() {
   http.end();
   firebase.setInt(macAdresa + "/hranaIzbacena", 1);
 }
-void getNextAktivaciju(int* izvrsenaHour, int* izvrsenaMinute) {
+void getNextAktivaciju(int *izvrsenaHour, int *izvrsenaMinute)
+{
   HTTPClient http;
   String izvrsenaQueryParam = "";
-  if (izvrsenaHour != nullptr && izvrsenaMinute != nullptr) {
+  if (izvrsenaHour != nullptr && izvrsenaMinute != nullptr)
+  {
     izvrsenaQueryParam = String("&izvrsenaHour=") + *izvrsenaHour + String("&izvrsenaMinute=") + *izvrsenaMinute;
   }
   String url = getApiUrl() + getNextUrl + macAdresa + izvrsenaQueryParam;
   http.begin(url.c_str());
   int httpResponseCode = http.GET();
-  if (httpResponseCode > 0) {
+  if (httpResponseCode > 0)
+  {
     JsonDocument doc;
     deserializeJson(doc, http.getString());
-    if (nextAktivacija != nullptr) {
+    if (nextAktivacija != nullptr)
+    {
       delete nextAktivacija;
     }
     nextAktivacija = new NextAktivacija();
     nextAktivacija->setAktivaciju(doc["sat"], doc["minuta"]);
-  } else {
+  }
+  else
+  {
     delete nextAktivacija;
     nextAktivacija = nullptr;
   }
   delete izvrsenaHour, izvrsenaMinute;
   http.end();
 }
-void getPodatkeZaUredjaj() {
+void getPodatkeZaUredjaj()
+{
   HTTPClient http;
   String url = getApiUrl() + getPodatkeZaUredjajUrl + macAdresa;
   http.begin(url.c_str());
   int httpResponseCode = http.GET();
 
-  if (httpResponseCode > 0) {
+  if (httpResponseCode > 0)
+  {
     JsonDocument doc;
     deserializeJson(doc, http.getString());
     podaciUredjaj.setPodatke(doc["izbacivanja"], nullptr);
   }
   http.end();
 }
-void wmConfigPortalTimeout() {
+void wmConfigPortalTimeout()
+{
   ESP.restart();
 }
-void izvrsiAktivaciju() {
-  if (podaciUredjaj.izbacivanja == 4) {
+void izvrsiAktivaciju()
+{
+  if (podaciUredjaj.izbacivanja == 4)
+  {
     return;
   }
   digitalWrite(MOTOR_PIN, HIGH);
   delay(30);
   digitalWrite(MOTOR_PIN, LOW);
   podaciUredjaj.izbacivanja++;
-  if (podaciUredjaj.imaoObrokVrijeme != nullptr) {
+  if (podaciUredjaj.imaoObrokVrijeme != nullptr)
+  {
     delete podaciUredjaj.imaoObrokVrijeme;
   }
   podaciUredjaj.imaoObrokVrijeme = new DateTime(sat.now());

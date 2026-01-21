@@ -35,14 +35,16 @@ function dodajUredjaj() {
         body: JSON.stringify(obj)
     }).then(response => {
         if (response.status != 200) {
-            porukaError("Server javlja grešku: " + response.statusText);
-            return -1;
+            response.text().then((value) => {
+                porukaError("Server javlja grešku: " + value);
+            })
+            return;
         }
         response.json().then(r => {
             id = r.uredjajID;
         })
     }).catch(error => {
-        porukaError("Greška u komunikaciji sa serverom " + error.statusText);
+        porukaError("Greška u komunikaciji sa serverom, pokušajte ponovo!");
     })
 }
 
@@ -71,7 +73,9 @@ function dodajUredjajZaKorisnika() {
         body: JSON.stringify(obj)
     }).then(response => {
         if (response.status != 200) {
-            porukaError("Server javlja grešku: " + response.statusText);
+            response.text().then((value) => {
+                porukaError("Server javlja grešku: " + value);
+            })
             return;
         }
         uredjajdb.child(macUredjaja).on("value", (snap) => {
@@ -91,7 +95,7 @@ function dodajUredjajZaKorisnika() {
         document.getElementById("ime-uredjaja").value = '';
         document.getElementById("mac-uredjaja").value = '';
     }).catch(error => {
-        porukaError("Greška u komunikaciji sa serverom " + error.statusText);
+        porukaError("Greška u komunikaciji sa serverom, pokušajte ponovo!");
     })
 }
 
@@ -99,7 +103,9 @@ function ucitajUredjaje() {
     let url = `${urlAplikacije}/KorisnikUredjaj/GetUredjajeZaKorisnika?korisnikId=${sessionStorage.getItem('korisnikID')}`;
     fetch(url).then(response => {
         if (response.status != 200) {
-            porukaError("Server javlja grešku: " + response.statusText);
+            response.text().then((value) => {
+                porukaError("Server javlja grešku: " + value);
+            })
             return;
         }
         response.json().then(r => {
@@ -115,7 +121,7 @@ function ucitajUredjaje() {
             }
         })
     }).catch(error => {
-        porukaError("Greška u komunikaciji sa serverom " + error.statusText);
+        porukaError("Greška u komunikaciji sa serverom, pokušajte ponovo!");
     })
 }
 
@@ -126,14 +132,16 @@ function obrisiUredjaj(id) {
         method: 'DELETE'
     }).then(response => {
         if (response.status != 200) {
-            porukaError("Server javlja grešku: " + response.statusText);
+            response.text().then((value) => {
+                porukaError("Server javlja grešku: " + value);
+            })
             return;
         }
         uredjajdb.child(sessionStorage.getItem(uredjajMac)).remove();
         porukaSuccess("Uređaj je uspjesno obrisan!");
         ucitajUredjaje();
     }).catch(error => {
-        porukaError("Greška u komunikaciji sa serverom " + error.statusText);
+        porukaError("Greška u komunikaciji sa serverom, pokušajte ponovo!");
     })
 }
 
@@ -166,7 +174,9 @@ function promijeniLozinku() {
         body: JSON.stringify(obj)
     }).then(response => {
         if (response.status != 200) {
-            porukaError("Server javlja grešku: " + response.statusText);
+            response.text().then((value) => {
+                porukaError("Server javlja grešku: " + value);
+            })
             return;
         }
         porukaSuccess("Lozinka je uspješno promijenjena!");
@@ -174,7 +184,7 @@ function promijeniLozinku() {
         document.getElementById("nova-lozinka1").value = '';
         document.getElementById("nova-lozinka2").value = '';
     }).catch(error => {
-        porukaError("Greška u komunikaciji sa serverom " + error.statusText);
+        porukaError("Greška u komunikaciji sa serverom, pokušajte ponovo!");
     })
 }
 

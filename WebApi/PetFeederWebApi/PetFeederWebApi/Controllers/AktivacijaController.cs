@@ -28,7 +28,7 @@ namespace PetFeederWebApi.Controllers
             aktivacije.Sort((a, b) => a.Vrijeme.CompareTo(b.Vrijeme));
             foreach (var a in aktivacije)
             {
-                if (DateTime.UtcNow.TimeOfDay <= a.Vrijeme.TimeOfDay && a.Vrijeme.Hour != izvrsenaHour && a.Vrijeme.Minute != izvrsenaMinute)
+                if (DateTime.Now.TimeOfDay <= a.Vrijeme.TimeOfDay && (izvrsenaHour == null || a.Vrijeme.Hour != izvrsenaHour.Value) && (izvrsenaMinute == null || a.Vrijeme.Minute != izvrsenaMinute.Value))
                 {
                     return Ok(new ArduinoAktivacijaVM()
                     {

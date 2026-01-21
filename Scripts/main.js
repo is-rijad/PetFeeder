@@ -69,12 +69,14 @@ document.getElementById("resetuj-izbacivanja").onclick = () => {
         },
     }).then(response => {
         if (response.status != 200) {
-            porukaError("Server javlja grešku " + response.statusText);
+            response.text().then((value) => {
+                porukaError("Server javlja grešku: " + value);
+            })
             return;
         }
         uredjajdb.child(mac).child("resetujIzbacivanja").set(1);
     }).catch(err => {
-        porukaError("Greška u komunikaciji sa serverom " + err.statusText);
+        porukaError("Greška u komunikaciji sa serverom, pokušajte ponovo!");
     });
 }
 document.getElementById("dodaj-hranu").onclick = () => {
@@ -104,7 +106,10 @@ function pripremiComboBox() {
 
     fetch(url).then(response => {
         if (response.status != 200) {
-            porukaError("Server javlja grešku " + response.statusText);
+            response.text().then((value) => {
+                porukaError("Server javlja grešku: " + value);
+            })
+            return;
         }
         response.json().then(r => {
             document.getElementById("uredjaji").innerHTML = '';
@@ -123,7 +128,7 @@ function pripremiComboBox() {
             }
         })
     }).catch(err => {
-        porukaError("Greška u komunikaciji sa serverom " + err.statusText);
+        porukaError("Greška u komunikaciji sa serverom, pokušajte ponovo!");
     });
 }
 
@@ -149,11 +154,13 @@ function spremiAktivacije() {
         method: "DELETE"
     }).then(response => {
         if (response.status != 200) {
-            porukaError("Server javlja grešku " + response.statusText);
+            response.text().then((value) => {
+                porukaError("Server javlja grešku: " + value);
+            })
             return;
         }
     }).catch(err => {
-        porukaError("Greška u komunikaciji sa serverom " + err.statusText);
+        porukaError("Greška u komunikaciji sa serverom, pokušajte ponovo!");
         return;
     });
 
@@ -176,7 +183,7 @@ function spremiAktivacije() {
         aktivacije[i] = {
             korisnikID: parseInt(sessionStorage.getItem(korisnikId)),
             uredjajMac: document.getElementById("uredjaji").value,
-            vrijeme: new Date(1970, 1, 1, parseInt(sati), parseInt(minute) + 60).toJSON()
+            vrijeme: new Date(1970, 1, 1, parseInt(sati), parseInt(minute) + 60).toISOString()
         };
 
     }
@@ -190,13 +197,15 @@ function spremiAktivacije() {
         body: JSON.stringify(aktivacije)
     }).then(response => {
         if (response.status != 200) {
-            porukaError("Server javlja grešku " + response.statusText);
+            response.text().then((value) => {
+                porukaError("Server javlja grešku: " + value);
+            })
             return;
         }
         porukaSuccess("Aktivacije su uspješno spremljene.");
         uredjajdb.child(mac).child("aktivacijeIzmijenjene").set(1);
     }).catch(err => {
-        porukaError("Greška u komunikaciji sa serverom " + err.statusText);
+        porukaError("Greška u komunikaciji sa serverom, pokušajte ponovo!");
     });
 }
 
@@ -208,7 +217,10 @@ function ucitajAktivacije() {
 
     fetch(url).then(response => {
         if (response.status != 200) {
-            porukaError("Server javlja grešku " + response.statusText);
+            response.text().then((value) => {
+                porukaError("Server javlja grešku: " + value);
+            })
+            return;
         }
         response.json().then(r => {
             kontrolaAktivacijeDiv.innerHTML = '';
@@ -230,7 +242,7 @@ function ucitajAktivacije() {
             ucitaneAktivacije = true;
         })
     }).catch(err => {
-        porukaError("Greška u komunikaciji sa serverom " + err.statusText);
+        porukaError("Greška u komunikaciji sa serverom, pokušajte ponovo!");
     });
 }
 
@@ -250,8 +262,8 @@ function getPodatke(mac) {
                 else {
                     document.getElementById("historija-div").style.display = "block";
                     let value = new Date(r.imaoObrokVrijeme);
-                    let datum = `${value.getDate()}.${value.getMonth()}.${value.getFullYear()}`
-                    let sati = `${value.getHours()}:${value.getMinutes()}:${value.getSeconds()}`
+                    let datum = `${value.getDate()}.${value.getMonth() + 1}.${value.getFullYear()}.`
+                    let sati = `${value.getHours()}:${value.getMinutes()}`
 
                     document.getElementById("historija-datum").innerHTML = datum;
                     document.getElementById("historija-vrijeme").innerHTML = sati;

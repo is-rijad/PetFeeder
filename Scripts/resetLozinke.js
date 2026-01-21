@@ -11,13 +11,15 @@ function resetLozinke() {
 
         fetch(url).then(response => {
             if (response.status != 200) {
-                porukaError("Server javlja grešku: " + response.statusText);
+                response.text().then((value) => {
+                    porukaError("Server javlja grešku: " + value);
+                })
                 return;
             }
             porukaSuccess("Lozinka je uspješno resetovana.\nProvjerite E-Mail inbox.");
             document.getElementById('EmailInput').value = '';
         }).catch(error => {
-            porukaError("Greška u komunikaciji sa serverom " + error.statusText);
+            porukaError("Greška u komunikaciji sa serverom, pokušajte ponovo!");
         })
     }
     else {

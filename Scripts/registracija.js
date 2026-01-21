@@ -34,11 +34,13 @@ function registrujKorisnika() {
         body: JSON.stringify(obj)
     }).then(r => {
         if (r.status != 200) {
-            porukaError("Server javlja grešku " + r.statusText);
+            r.text().then((value) => {
+                porukaError("Server javlja grešku: " + value);
+            })
             return;
         }
         redirekcija('../login.html');
     }).catch(err => {
-        porukaError("Greška u komunikaciji sa serverom " + err.statusText);
+        porukaError("Greška u komunikaciji sa serverom, pokušajte ponovo!");
     })
 }
