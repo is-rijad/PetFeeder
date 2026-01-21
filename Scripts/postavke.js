@@ -81,7 +81,8 @@ function dodajUredjajZaKorisnika() {
                     dodajHranu: -1,
                     aktivacijeIzmijenjene: -1,
                     zaboraviWifi: -1,
-                    upaljenSenzor: -1
+                    resetovanaIzbacivanja: -1,
+                    hranaIzbacena: -1
                 })
             };
         })

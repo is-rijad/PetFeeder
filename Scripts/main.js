@@ -35,13 +35,23 @@ function postaviHranilicu() {
     document.getElementById("ime-uredjaja").innerHTML = document.getElementById("uredjaji").options[index].text;
     sessionStorage.setItem(uredjajMac, mac);
 
+    uredjajdb.child(mac).child("hranaIzbacena").on("value", (snap) => {
+        if (parseInt(snap.val()) == 1) {
+            getPodatke(mac);
+            uredjajdb.child(mac).child("hranaIzbacena").set(-1);
+        }
+    });
+
     uredjajdb.child(mac).child("uredjajAktivan").on("value", (snap) => {
         document.getElementById("upali-ugasi").innerHTML = (parseInt(snap.val()) == 1) ? "Ugasi" : "Upali"
-        document.getElementById("upali-ugasi").style.backgroundColor = (parseInt(snap.val()) == 1) ? "#ff0000" : "#00ff00"
+        document.getElementById("upali-ugasi").style.backgroundColor = (parseInt(snap.val()) == 1) ? "#00ff00" : "#ff0000"
     })
-    uredjajdb.child(mac).child("upaljenSenzor").on("value", (snap) => {
-        document.getElementById("upali-ugasi-senzor").innerHTML = (parseInt(snap.val()) == 1) ? "Ugasi senzor" : "Upali senzor"
-        document.getElementById("upali-ugasi-senzor").style.backgroundColor = (parseInt(snap.val()) == 1) ? "#ff0000" : "#00ff00"
+    uredjajdb.child(mac).child("resetujIzbacivanja").on("value", (snap) => {
+        document.getElementById("resetuj-izbacivanja").innerHTML = (parseInt(snap.val()) == 1) ? "Resetovanje" : "Resetuj izbacivanja"
+        if (parseInt(snap.val()) == 1) {
+            getPodatke(mac);
+            porukaSuccess("Izbacivanja su resetovana");
+        }
     })
     getPodatke(mac);
 
@@ -50,9 +60,22 @@ document.getElementById("upali-ugasi").onclick = () => {
     let uredjajAktivan = uredjajdb.child(mac).child("uredjajAktivan");
     (document.getElementById("upali-ugasi").innerHTML == "Upali") ? uredjajAktivan.set(1) : uredjajAktivan.set(-1)
 }
-document.getElementById("upali-ugasi-senzor").onclick = () => {
-    let upaljenSenzor = uredjajdb.child(mac).child("upaljenSenzor");
-    (document.getElementById("upali-ugasi-senzor").innerHTML == "Upali senzor") ? upaljenSenzor.set(1) : upaljenSenzor.set(-1)
+document.getElementById("resetuj-izbacivanja").onclick = () => {
+    var url = `${urlAplikacije}/Uredjaj/ResetujIzbacivanja?mac=${mac}`;
+    fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then(response => {
+        if (response.status != 200) {
+            porukaError("Server javlja grešku " + response.statusText);
+            return;
+        }
+        uredjajdb.child(mac).child("resetujIzbacivanja").set(1);
+    }).catch(err => {
+        porukaError("Greška u komunikaciji sa serverom " + err.statusText);
+    });
 }
 document.getElementById("dodaj-hranu").onclick = () => {
     let dodajHranu = uredjajdb.child(mac).child("dodajHranu");
@@ -216,8 +239,10 @@ function getPodatke(mac) {
     fetch(url).then(res => {
         if (res.status == 200) {
             res.json().then(r => {
-
                 document.getElementById("stanje-hranilice").innerHTML = r.izbacivanja;
+                if (r.izbacivanja == 4) {
+                    document.getElementById("stanje-hranilice").innerHTML += " (Potrebno napuniti)";
+                }
 
                 if (r.imaoObrokVrijeme == null) {
                     document.getElementById("historija-div").style.display = "none";
@@ -230,13 +255,6 @@ function getPodatke(mac) {
 
                     document.getElementById("historija-datum").innerHTML = datum;
                     document.getElementById("historija-vrijeme").innerHTML = sati;
-
-                    value = new Date(r.posljednjiUpdateVrijeme);
-                    datum = `${value.getDate()}.${value.getMonth()}.${value.getFullYear()}`
-                    sati = `${value.getHours()}:${value.getMinutes()}:${value.getSeconds()}`
-
-                    document.getElementById("posljednji-update-datum").innerHTML = datum;
-                    document.getElementById("posljednji-update-vrijeme").innerHTML = sati;
                 }
             })
         }

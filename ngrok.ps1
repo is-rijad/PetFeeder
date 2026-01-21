@@ -18,7 +18,7 @@ $token = $token.Trim()
 
 Get-Process ngrok -ErrorAction SilentlyContinue | Stop-Process -Force
 # ================== START NGROK ==================
-Start-Process ngrok -ArgumentList "start frontend" -WindowStyle Hidden
+Start-Process ngrok -ArgumentList "start --all" -WindowStyle Hidden
 
 Write-Host "⏳ Čekam da se ngrok tunnel podigne..."
 Start-Sleep -Seconds 5
@@ -27,14 +27,14 @@ while ($true) {
 
     $ngrok = Invoke-RestMethod "http://127.0.0.1:4040/api/tunnels"
 
-    $frontendUrl = ($ngrok.tunnels | Where-Object name -eq "frontend").public_url
+    $esp32Url = ($ngrok.tunnels | Where-Object name -eq "esp32").public_url
 
-    if (-not $frontendUrl) {
+    if (-not $esp32Url) {
         Start-Sleep 5
         continue
     }
 
-    Write-Host "Frontend > $frontendUrl"
+    Write-Host "esp32Url > $esp32Url"
 
     # RAW GitHub JSON
     $rawUrl = "https://raw.githubusercontent.com/$owner/$repo/refs/heads/$branch/$path"
@@ -47,7 +47,7 @@ while ($true) {
     }
     
     $changed =
-    ($remote.url -ne $frontendUrl)
+    ($remote.url -ne $esp32Url)
 
     if ($changed) {
         Write-Host "🔄 Detektovana promjena ngrok URL-a"
@@ -64,7 +64,7 @@ while ($true) {
         $sha = $current.sha
 
         $json = @{
-            url = $frontendUrl
+            url = $esp32Url
         } | ConvertTo-Json -Depth 3
 
         $encoded = [Convert]::ToBase64String(

@@ -77,8 +77,8 @@ namespace PetFeederWebApi.Controllers {
             }
 
             var lista = config.GetChildren().ToList();
-            var emailFrom = Encryption.Decoder(lista[3].GetSection("Email").Value);
-            var passwordFrom = Encryption.Decoder(lista[3].GetSection("Password").Value);
+            var emailFrom = lista[3].GetSection("Email").Value;
+            var passwordFrom = lista[3].GetSection("Password").Value;
 
             string lozinka = Helper.GenerisiLozinku();
 
