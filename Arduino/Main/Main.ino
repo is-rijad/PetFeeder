@@ -204,7 +204,7 @@ void getNextAktivaciju(int *izvrsenaHour, int *izvrsenaMinute)
   String url = getApiUrl() + getNextUrl + macAdresa + izvrsenaQueryParam;
   http.begin(url.c_str());
   int httpResponseCode = http.GET();
-  if (httpResponseCode > 0)
+  if (httpResponseCode == 200)
   {
     JsonDocument doc;
     deserializeJson(doc, http.getString());

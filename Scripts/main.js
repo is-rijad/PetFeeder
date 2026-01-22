@@ -80,6 +80,10 @@ document.getElementById("resetuj-izbacivanja").onclick = () => {
     });
 }
 document.getElementById("dodaj-hranu").onclick = () => {
+    if (document.getElementById("stanje-hranilice").innerHTML[0] == `4`) {
+        porukaError(`Morate prvo napuniti i resetovati hranilicu`)
+        return
+    }
     let dodajHranu = uredjajdb.child(mac).child("dodajHranu");
     dodajHranu.set(1);
     porukaSuccess("Hrana je dodata!");
