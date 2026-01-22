@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Cors;
+﻿using System.Runtime.InteropServices.JavaScript;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetFeederWebApi.Data;
@@ -26,9 +27,19 @@ namespace PetFeederWebApi.Controllers
             if (aktivacije.Count == 0)
                 return NotFound();
             aktivacije.Sort((a, b) => a.Vrijeme.CompareTo(b.Vrijeme));
+            TimeSpan? izvrsenaTime = null;
+            if (izvrsenaHour.HasValue && izvrsenaMinute.HasValue)
+            {
+                izvrsenaTime = new TimeSpan(izvrsenaHour.Value, izvrsenaMinute.Value, 0);
+            }
+            var currentTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, 0);
+
             foreach (var a in aktivacije)
             {
-                if (DateTime.Now.TimeOfDay <= a.Vrijeme.TimeOfDay && ((izvrsenaHour == null || izvrsenaMinute == null) || (a.Vrijeme.Hour != izvrsenaHour.Value || a.Vrijeme.Minute != izvrsenaMinute.Value)))
+                if (
+                    a.Vrijeme.TimeOfDay >= currentTime.TimeOfDay &&
+                    (!izvrsenaTime.HasValue || a.Vrijeme.TimeOfDay > izvrsenaTime.Value)
+                )
                 {
                     return Ok(new ArduinoAktivacijaVM()
                     {
